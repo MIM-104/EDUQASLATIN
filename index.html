@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Latin Vocab Tester</title>
     <style>
       * {
@@ -13,7 +14,6 @@
       html,
       body {
         height: 100%;
-        overflow: hidden;
       }
 
       body {
@@ -25,6 +25,7 @@
         justify-content: center;
         align-items: center;
         padding: 2rem;
+        overflow: hidden;
       }
 
       .glass {
@@ -78,53 +79,23 @@
       }
 
       @keyframes float-1 {
-        0% {
-          transform: translate(0, 0) rotate(0deg);
-        }
-
-        33% {
-          transform: translate(50px, 30px) rotate(5deg);
-        }
-
-        66% {
-          transform: translate(25px, 60px) rotate(-5deg);
-        }
-
-        100% {
-          transform: translate(0, 0) rotate(0deg);
-        }
+        0% { transform: translate(0, 0) rotate(0deg); }
+        33% { transform: translate(50px, 30px) rotate(5deg); }
+        66% { transform: translate(25px, 60px) rotate(-5deg); }
+        100% { transform: translate(0, 0) rotate(0deg); }
       }
 
       @keyframes float-2 {
-        0% {
-          transform: translate(0, 0) rotate(0deg);
-        }
-
-        33% {
-          transform: translate(-40px, -30px) rotate(-8deg);
-        }
-
-        66% {
-          transform: translate(-20px, -60px) rotate(8deg);
-        }
-
-        100% {
-          transform: translate(0, 0) rotate(0deg);
-        }
+        0% { transform: translate(0, 0) rotate(0deg); }
+        33% { transform: translate(-40px, -30px) rotate(-8deg); }
+        66% { transform: translate(-20px, -60px) rotate(8deg); }
+        100% { transform: translate(0, 0) rotate(0deg); }
       }
 
       @keyframes float-3 {
-        0% {
-          transform: translate(0, 0) scale(1);
-        }
-
-        50% {
-          transform: translate(40px, -30px) scale(1.1);
-        }
-
-        100% {
-          transform: translate(0, 0) scale(1);
-        }
+        0% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(40px, -30px) scale(1.1); }
+        100% { transform: translate(0, 0) scale(1); }
       }
 
       .card {
@@ -134,7 +105,6 @@
         position: relative;
         z-index: 2;
         color: rgba(255, 255, 255, 0.9);
-        transition: transform 300ms ease-out, opacity 300ms ease-out;
       }
 
       h1 {
@@ -154,31 +124,13 @@
       #stage-select,
       #quiz,
       #summary {
-        margin-top: 1.8rem;
-        transition: opacity 400ms ease-in-out, visibility 400ms ease-in-out;
+        display: none;
       }
 
-      #stage-select,
-      #quiz,
-      #summary {
-        transition: opacity 0.5s ease, visibility 0.5s ease;
-      }
-
-      #quiz,
-      #summary {
-        opacity: 0;
-        visibility: hidden;
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-      }
-
+      #stage-select.active,
       #quiz.active,
       #summary.active {
-        opacity: 1;
-        visibility: visible;
-        position: relative;
+        display: block;
       }
 
       label {
@@ -225,7 +177,6 @@
         width: 100%;
         min-width: 48px;
         padding: 10px 8px;
-        margin: 0;
         font-size: 1rem;
         background: rgba(255, 255, 255, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.2);
@@ -403,7 +354,6 @@
         min-height: 1.5em;
         margin-top: 1rem;
         text-align: center;
-        transition: all 0.3s ease;
       }
 
       .correct {
@@ -478,17 +428,42 @@
         .card {
           padding: 1.5rem;
         }
-
         h1 {
           font-size: 2rem;
         }
-
         #latin-word {
           font-size: 2rem;
         }
-
         .stage-buttons {
           grid-template-columns: repeat(6, 1fr);
+        }
+      }
+
+      @media (max-width: 480px) {
+        body {
+          padding: 1rem;
+        }
+        .card {
+          padding: 1rem;
+        }
+        .stage-buttons {
+          grid-template-columns: repeat(4, 1fr);
+        }
+        .stage-btn {
+          padding: 8px 6px;
+          font-size: 0.9rem;
+        }
+        h1 {
+          font-size: 1.8rem;
+        }
+        label {
+          font-size: 0.9rem;
+        }
+        button {
+          font-size: 1rem;
+        }
+        input[type=text], input[type=number] {
+          font-size: 1rem;
         }
       }
     </style>
@@ -582,8 +557,7 @@
           <option value="35">Not in stages 1 - 34</option>
         </select>
         <div class="selected-stages">
-          <p>Selected stages: <span id="selected-stages-text">None</span>
-          </p>
+          <p>Total words selected: <span id="total-unique">0</span></p>
         </div>
         <label for="count">Number of words to test:</label>
         <input type="number" id="count" min="1" placeholder="e.g. 20" class="glass">
@@ -620,63 +594,518 @@
     </div>
     <script>
       const vocab = {
-        1: {
-          "canis": {
-            details: "canis, m. (noun)",
-            answers: ["dog"]
-          },
-          "filius": {
-            details: "filii, m. (noun)",
-            answers: ["son"]
-          },
-          "hortus": {
-            details: "horti, m. (noun)",
-            answers: ["garden"]
-          },
-          "in+acc": {
-            details: "in + acc (prep)",
-            answers: ["into", "onto"]
-          },
-          "in+abl": {
-            details: "in + abl (prep)",
-            answers: ["in", "on"]
-          },
-          "laboro": {
-            details: "laborare, laboravi (verb)",
-            answers: ["work"]
-          },
-          "mater": {
-            details: "matris, f. (noun)",
-            answers: ["mother"]
-          },
-          "pater": {
-            details: "patris, m. (noun)",
-            answers: ["father"]
-          },
-          "sedeo": {
-            details: "sedere, sedi (verb)",
-            answers: ["sit"]
-          },
-          "servus": {
-            details: "servi, m. (noun)",
-            answers: ["slave"]
-          },
-          "sum": {
-            details: "esse, fui (verb, irr.)",
-            answers: ["be"]
-          },
-          "via": {
-            details: "viae, f. (noun)",
-            answers: ["street", "road", "way"]
-          }
-        },
-      };
-      let testList = [],
-        idx = 0,
-        wrong = [],
-        correct = [],
-        graded = false;
+      1: {
+        "canis":   { details: "canis, m. (noun)", answers: ["dog"] },
+        "filius":  { details: "filii, m. (noun)", answers: ["son"] },
+        "hortus":  { details: "horti, m. (noun)", answers: ["garden"] },
+        "in+acc":  { details: "in + acc (prep)", answers: ["into", "onto"] },
+        "in+abl":  { details: "in + abl (prep)", answers: ["in", "on"] },
+        "laboro":  { details: "laborare, laboravi (verb)", answers: ["work"] },
+        "mater":   { details: "matris, f. (noun)", answers: ["mother"] },
+        "pater":   { details: "patris, m. (noun)", answers: ["father"] },
+        "sedeo":   { details: "sedere, sedi (verb)", answers: ["sit"] },
+        "servus":  { details: "servi, m. (noun)", answers: ["slave"] },
+        "sum":     { details: "esse, fui (verb, irr.)", answers: ["be"] },
+        "via":     { details: "viae, f. (noun)", answers: ["street", "road", "way"] }
+      },
+      2: {
+        "amicus":  { details: "amici, m. (noun)", answers: ["friend"] },
+        "ancilla": { details: "ancillae, f. (noun)", answers: ["slave-girl", "maid"] },
+        "cena":    { details: "cenae, f. (noun)", answers: ["dinner", "meal"] },
+        "cibus":   { details: "cibi, m. (noun)", answers: ["food"] },
+        "dominus": { details: "domini, m. (noun)", answers: ["master"] },
+        "dormio":  { details: "dormire, dormivi (verb)", answers: ["sleep"] },
+        "intro":   { details: "intrare, intravi, intratus (verb)", answers: ["enter"] },
+        "laetus":  { details: "laeta, laetum (adj)", answers: ["happy"] },
+        "laudo":   { details: "laudare, laudavi, laudatus (verb)", answers: ["praise"] },
+        "quoque":  { details: "indecl. (conj)", answers: ["also", "too"] },
+        "saluto":  { details: "salutare, salutavi, salutatus (verb)", answers: ["greet"] }
+      },
+      3: {
+        "ad":        { details: "ad + acc (prep)", answers: ["to", "towards", "at"] },
+        "bibo":      { details: "bibere, bibi (verb)", answers: ["drink"] },
+        "clamo":     { details: "clamare, clamavi, clamatus (verb)", answers: ["shout"] },
+        "et":        { details: "indecl. (conj)", answers: ["and"] },
+        "exspecto":  { details: "exspectare, exspectavi, exspectatus (verb)", answers: ["wait for"] },
+        "ianua":     { details: "ianuae, f. (noun)", answers: ["door"] },
+        "iratus":    { details: "irata, iratum (adj)", answers: ["angry"] },
+        "magnus":    { details: "magna, magnum (adj)", answers: ["big", "large", "great"] },
+        "navis":     { details: "navis, f. (noun)", answers: ["ship"] },
+        "non":       { details: "indecl. (adv)", answers: ["not"] },
+        "porto":     { details: "portare, portavi, portatus (verb)", answers: ["carry"] },
+        "respondeo": { details: "respondere, respondi, responsus (verb)", answers: ["reply"] },
+        "rideo":     { details: "ridere, risi (verb)", answers: ["laugh", "smile"] },
+        "surgo":     { details: "surgere, surrexi (verb)", answers: ["get up", "stand up", "rise"] },
+        "taberna":   { details: "tabernae, f. (noun)", answers: ["shop", "inn"] },
+        "video":     { details: "videre, vidi, visus (verb)", answers: ["see"] },
+        "vinum":     { details: "vini, n. (noun)", answers: ["wine"] }
+      },
+      4: {
+        "ago":      { details: "agere, egi, actus (verb)", answers: ["do", "act", "drive"] },
+        "cur?":     { details: "indecl. (adv)", answers: ["why?"] },
+        "e/ex":     { details: "e, ex + abl (prep)", answers: ["from", "out of"] },
+        "ego":      { details: "mei (pron)", answers: ["I", "me"] },
+        "habeo":    { details: "habere, habui, habitus (verb)", answers: ["have"] },
+        "inquit":   { details: "(verb, irr.)", answers: ["say", "said"] },
+        "pecunia":  { details: "pecuniae, f. (noun)", answers: ["money"] },
+        "perterritus": { details: "perterrita, perterritum (adj)", answers: ["terrified"] },
+        "quaero":   { details: "quaerere, quaesivi, quaesitus (verb)", answers: ["search for", "look for", "ask"] },
+        "quis? quid": { details: "pron (interrog)", answers: ["who?", "what?"] },
+        "reddo":    { details: "reddere, reddidi, redditus (verb)", answers: ["give back", "restore"] },
+        "sed":      { details: "indecl. (conj)", answers: ["but"] },
+        "signum":   { details: "signi, n. (noun)", answers: ["sign", "signal", "seal"] },
+        "tu":       { details: "tui (pron)", answers: ["you"] },
+        "voco":     { details: "vocare, vocavi, vocatus (verb)", answers: ["call"] }
+      },
+      5: {
+        "adsum":    { details: "adesse (verb, irr.)", answers: ["be here", "be present"] },
+        "ambulo":   { details: "ambulare, ambulavi (verb)", answers: ["walk"] },
+        "audio":    { details: "audire, audivi, auditus (verb)", answers: ["hear", "listen to"] },
+        "clamor":   { details: "clamoris, m. (noun)", answers: ["shout", "noise"] },
+        "curro":    { details: "currere, cucurri, cursus (verb)", answers: ["run"] },
+        "femina":   { details: "feminae, f. (noun)", answers: ["woman"] },
+        "hodie":    { details: "indecl. (adv)", answers: ["today"] },
+        "iuvenis":  { details: "iuvenis, m. (noun)", answers: ["young man"] },
+        "meus":     { details: "mea, meum (adj)", answers: ["my"] },
+        "multus":   { details: "multa, multum (adj)", answers: ["much", "many"] },
+        "optimus":  { details: "optima, optimum (adj)", answers: ["best", "excellent"] },
+        "peto":     { details: "petere, petivi, petitus (verb)", answers: ["ask for", "attack", "seek"] },
+        "puella":   { details: "puellae, f. (noun)", answers: ["girl"] },
+        "senex":    { details: "senis, m. (noun/adj)", answers: ["old man", "old"] },
+        "specto":   { details: "spectare, spectavi (verb)", answers: ["watch", "look at"] },
+        "sto":      { details: "stare, steti (verb)", answers: ["stand"] },
+        "turba":    { details: "turbae, f. (noun)", answers: ["crowd"] },
+        "ubi":      { details: "indecl. (adv)", answers: ["where", "when"] },
+        "urbs":     { details: "urbis, f. (noun)", answers: ["city"] },
+        "venio":    { details: "venire, veni (verb)", answers: ["come"] }
+      },
+      6: {
+        "absum":    { details: "abesse (verb, irr.)", answers: ["be absent"] },
+        "emo":      { details: "emere, emi, emptus (verb)", answers: ["buy"] },
+        "festino":  { details: "festinare, festinavi (verb)", answers: ["hurry"] },
+        "fortis":   { details: "forte (adj)", answers: ["brave"] },
+        "libertus": { details: "liberti, m. (noun)", answers: ["freedman"] },
+        "olim":     { details: "indecl. (adv)", answers: ["once"] },
+        "parvus":   { details: "parva, parvum (adj)", answers: ["small"] },
+        "per+acc":  { details: "per + acc (prep)", answers: ["through", "along"] },
+        "postquam": { details: "indecl. (conj)", answers: ["after"] },
+        "quod":     { details: "indecl. (conj)", answers: ["because"] },
+        "res":      { details: "rei, f. (noun)", answers: ["thing", "matter"] },
+        "scribo":   { details: "scribere, scripsi, scriptus (verb)", answers: ["write"] },
+        "subito":   { details: "indecl. (adv)", answers: ["suddenly"] },
+        "supero":   { details: "superare, superavi (verb)", answers: ["overcome"] },
+        "tum":      { details: "indecl. (adv)", answers: ["then"] },
+        "tuus":     { details: "tua, tuum (pron)", answers: ["your"] },
+        "vendo":    { details: "vendere, vendidi (verb)", answers: ["sell"] }
+      },
+      7: {
+        "conspicio": { details: "conspicere, conspexi (verb)", answers: ["notice"] },
+        "cum+abl":   { details: "cum + abl (prep)", answers: ["with"] },
+        "facio":     { details: "facere, feci, factus (verb)", answers: ["make", "do"] },
+        "heri":      { details: "indecl. (adv)", answers: ["yesterday"] },
+        "ingens":    { details: "ingentis (adj)", answers: ["huge"] },
+        "intellego": { details: "intellegere, intellexi (verb)", answers: ["understand"] },
+        "lacrimo":   { details: "lacrimare, lacrimavi (verb)", answers: ["weep"] },
+        "narro":     { details: "narrare, narravi (verb)", answers: ["tell"] },
+        "neco":      { details: "necare, necavi (verb)", answers: ["kill"] },
+        "nihil":     { details: "indecl. (noun)", answers: ["nothing"] },
+        "omnis":     { details: "omne (adj)", answers: ["all", "every"] },
+        "paro":      { details: "parare, paravi (verb)", answers: ["prepare"] },
+        "prope":     { details: "prope + acc (prep)", answers: ["near"] },
+        "rogo":      { details: "rogare, rogavi (verb)", answers: ["ask"] },
+        "tamen":     { details: "indecl. (conj)", answers: ["however"] },
+        "terreo":    { details: "terrere, terrui (verb)", answers: ["frighten"] }
+      },
+      8: {
+        "consumo":  { details: "consumere, consumpsi (verb)", answers: ["eat"] },
+        "duco":     { details: "ducere, duxi (verb)", answers: ["lead", "take"] },
+        "ferox":    { details: "ferocis (adj)", answers: ["fierce"] },
+        "gladius":  { details: "gladii, m. (noun)", answers: ["sword"] },
+        "hic":      { details: "haec, hoc (pron)", answers: ["this"] },
+        "is":       { details: "ea, id (pron)", answers: ["he","she","it","this","that","them"] },
+        "nuntius":  { details: "nuntii, m. (noun)", answers: ["messenger","message","news"] },
+        "pes":      { details: "pedis, m. (noun)", answers: ["foot","paw"] },
+        "porta":    { details: "portae, f. (noun)", answers: ["gate"] },
+        "postulo":  { details: "postulare, postulavi (verb)", answers: ["demand"] },
+        "puer":     { details: "pueri, m. (noun)", answers: ["boy"] },
+        "pugno":    { details: "pugnare, pugnavi (verb)", answers: ["fight"] },
+        "saepe":    { details: "indecl. (adv)", answers: ["often"] },
+        "sanguis":  { details: "sanguinis, m. (noun)", answers: ["blood"] },
+        "silva":    { details: "silvae, f. (noun)", answers: ["wood"] },
+        "statim":   { details: "indecl. (adv)", answers: ["immediately", "at once"] },
+        "totus":    { details: "tota, totum (adj)", answers: ["whole"] }
+      },
+      9: {
+        "celer":    { details: "celere (adj)", answers: ["quick","fast"] },
+        "cupio":    { details: "cupere, cupivi (verb)", answers: ["want","desire"] },
+        "dies":     { details: "diei, m. (noun)", answers: ["day"] },
+        "do":       { details: "dare, dedi (verb)", answers: ["give"] },
+        "fero":     { details: "ferre, tuli (verb, irr.)", answers: ["bring","bear"] },
+        "homo":     { details: "hominis, m. (noun)", answers: ["man","person"] },
+        "ille":     { details: "illa, illud (pron)", answers: ["that"] },
+        "iterum":   { details: "indecl. (adv)", answers: ["again"] },
+        "maneo":    { details: "manere, mansi (verb)", answers: ["remain","stay"] },
+        "medius":   { details: "media, medium (adj)", answers: ["middle"] },
+        "mox":      { details: "indecl. (adv)", answers: ["soon"] },
+        "offero":   { details: "offerre, obtuli (verb)", answers: ["offer"] },
+        "ostendo":  { details: "ostendere, ostendi (verb)", answers: ["show"] },
+        "post":     { details: "post + acc (prep)", answers: ["after","behind"] },
+        "procedo":  { details: "procedere, processi (verb)", answers: ["advance"] },
+        "pulcher":  { details: "pulchra, pulchrum (adj)", answers: ["beautiful"] },
+        "trado":    { details: "tradere, tradidi (verb)", answers: ["hand over"] }
+      },
+      10: {
+        "accipio":  { details: "accipere, accepi (verb)", answers: ["accept","receive"] },
+        "frater":   { details: "fratris, m. (noun)", answers: ["brother"] },
+        "habito":   { details: "habitare, habitavi (verb)", answers: ["live"] },
+        "imperium": { details: "imperii, n. (noun)", answers: ["power","command","empire"] },
+        "invenio":  { details: "invenire, inveni (verb)", answers: ["find"] },
+        "nos":      { details: "nostrum (pron)", answers: ["we","us"] },
+        "nuntio":   { details: "nunti\u0101re, nuntiavi (verb)", answers: ["announce","report"] },
+        "pax":      { details: "pacis, f. (noun)", answers: ["peace"] },
+        "quam":     { details: "indecl. (adv)", answers: ["how","than"] },
+        "semper":   { details: "indecl. (adv)", answers: ["always"] },
+        "servo":    { details: "servare, servavi (verb)", answers: ["save","look after"] },
+        "solus":    { details: "sola, solum (adj)", answers: ["alone","only"] },
+        "suus":     { details: "sua, suum (pron)", answers: ["his","their"] },
+        "taceo":    { details: "tacere, tacui (verb)", answers: ["be silent"] },
+        "uxor":     { details: "uxoris, f. (noun)", answers: ["wife"] },
+        "vehementer": { details: "indecl. (adv)", answers: ["strongly","violently"] },
+        "vos":      { details: "vestrum (pron)", answers: ["you (pl)"] }
+      },
+      11: {
+        "capio":    { details: "capio capere, cepi, captus (verb)", answers: ["take","catch","capture","adopt (a plan)"] },
+        "civis":    { details: "civis, m.f. (noun)", answers: ["citizen"] },
+        "credo":    { details: "credere, credidi, creditus (verb)", answers: ["believe","trust","have faith in"] },
+        "de":       { details: "de + abl (prep)", answers: ["from","down from","about"] },
+        "eo":       { details: "ire, ii (verb, irr.)", answers: ["go"] },
+        "lego":     { details: "legere, legi, lectus (verb)", answers: ["read","choose"] },
+        "minime":   { details: "indecl. (adv)", answers: ["very little","least","no"] },
+        "murus":    { details: "muri, m. (noun)", answers: ["wall"] },
+        "noster":   { details: "nostra, nostrum (pron)", answers: ["our"] },
+        "nunc":     { details: "indecl. (adv)", answers: ["now"] },
+        "placeo":   { details: "placere, placui (verb)", answers: ["please"] },
+        "primus":   { details: "prima, primum (adj)", answers: ["first"] },
+        "promitto": { details: "promittere, promisi, promissus (verb)", answers: ["promise"] },
+        "senator":  { details: "senatoris, m. (noun)", answers: ["senator"] },
+        "stultus":  { details: "stulta, stultum (adj)", answers: ["stupid","foolish"] },
+        "vir":      { details: "viri, m. (noun)", answers: ["man"] }
+      },
+      12: {
+        "duo":      { details: "duae, duo (adj)", answers: ["two"] },
+        "epistula": { details: "epistulae, f. (noun)", answers: ["letter"] },
+        "frustra":  { details: "indecl. (adv)", answers: ["in vain"] },
+        "fugio":    { details: "fugere, fugi (verb)", answers: ["run away","flee"] },
+        "adeceo":   { details: "iacere, iacui (verb)", answers: ["lie (positional)"] },
+        "iam":      { details: "indecl. (adv)", answers: ["now","already"] },
+        "igitur":   { details: "indecl. (adv)", answers: ["therefore","and so"] },
+        "mitto":    { details: "mittere, misi, missus (verb)", answers: ["send"] },
+        "mons":     { details: "montis, m. (noun)", answers: ["mountain"] },
+        "paene":    { details: "indecl. (adv)", answers: ["almost","nearly"] },
+        "sentio":   { details: "sentire, sensi, sensus (verb)", answers: ["feel","notice"] },
+        "tandem":   { details: "indecl. (adv)", answers: ["at last","finally"] },
+        "templum":  { details: "templi, n. (noun)", answers: ["temple"] },
+        "terra":    { details: "terrae, f. (noun)", answers: ["ground","land"] },
+        "timeo":    { details: "timere, timui (verb)", answers: ["fear","be afraid"] },
+        "tres":     { details: "tria (adj)", answers: ["three"] },
+        "unus":     { details: "una, unum (adj)", answers: ["one"] }
+      },
+      13: {
+        "advenio":  { details: "advenire, adveni (verb)", answers: ["arrive"] },
+        "alter":    { details: "altera, alterum (pron/adj)", answers: ["the other","another","the second of two"] },
+        "ceteri":   { details: "ceterae, cetera (adj)", answers: ["the rest","the others"] },
+        "custos":   { details: "custodis, m.f. (noun)", answers: ["guard"] },
+        "dico":     { details: "dicere, dixi, dictus (verb)", answers: ["say"] },
+        "ita vero": { details: "indecl. (adv)", answers: ["yes"] },
+        "nolo":     { details: "nolle, nolui (verb, irr.)", answers: ["not want"] },
+        "novus":    { details: "nova, novum (adj)", answers: ["new"] },
+        "nullus":   { details: "nulla, nullum (adj)", answers: ["not any","no"] },
+        "possum":   { details: "posse, potui (verb, irr.)", answers: ["can","be able"] },
+        "se":       { details: "sui (pron)", answers: ["himself","herself","itself","themselves"] },
+        "traho":    { details: "trahere, traxi, tractus (verb)", answers: ["drag","draw","pull"] },
+        "vita":     { details: "vitae, f. (noun)", answers: ["life"] },
+        "volo":     { details: "velle, volui (verb, irr.)", answers: ["want"] }
+      },
+      14: {
+        "aliquis":  { details: "aliquid (pron)", answers: ["someone","something"] },
+        "apud":     { details: "apud + acc (prep)", answers: ["among","with","at the house of"] },
+        "deleo":    { details: "delere, delevi, deletus (verb)", answers: ["destroy"] },
+        "deus":     { details: "dei, m. (noun)", answers: ["god"] },
+        "difficilis":{ details: "difficile (adj)", answers: ["difficult"] },
+        "domina":   { details: "dominae, f. (noun)", answers: ["mistress"] },
+        "donum":    { details: "doni, n. (noun)", answers: ["gift","present"] },
+        "fidelis":  { details: "fidele (adj)", answers: ["faithful","loyal"] },
+        "maritus":  { details: "mariti, m. (noun)", answers: ["husband"] },
+        "necesse":  { details: "indecl. (adj)", answers: ["necessary"] },
+        "num ... ?":{ details: "indecl. (partic)", answers: ["surely not?"] },
+        "quamquam": { details: "indecl. (conj)", answers: ["although"] },
+        "-que":      { details: "indecl. (conj)", answers: ["and"] },
+        "rex":      { details: "regis, m. (noun)", answers: ["king"] }
+      },
+      15: {
+        "alius":     { details: "alia, aliud (pron/adj)", answers: ["other","another","else"] },
+        "aqua":      { details: "aquae, f. (noun)", answers: ["water"] },
+        "debeo":     { details: "debere, debui, debitus (verb)", answers: ["owe","ought","should","must"] },
+        "equus":     { details: "equi, m. (noun)", answers: ["horse"] },
+        "etiam":     { details: "indecl. (adv)", answers: ["also","even"] },
+        "lente":     { details: "indecl. (adv)", answers: ["slowly"] },
+        "mare":      { details: "maris, n. (noun)", answers: ["sea"] },
+        "miser":     { details: "misera, miserum (adj)", answers: ["miserable","wretched","sad"] },
+        "nauta":     { details: "nautae, m. (noun)", answers: ["sailor"] },
+        "princeps":  { details: "principis, m. (noun)", answers: ["chief","chieftain","emperor"] },
+        "qui":       { details: "quae, quod (pron)", answers: ["who","which"] },
+        "redeo":     { details: "redire, redii (verb, irr.)", answers: ["go back","come back","return"] },
+        "teneo":     { details: "tenere, tenui, tentus (verb)", answers: ["hold","keep","possess"] },
+        "vinco":     { details: "vincere, vici, victus (verb)", answers: ["conquer","win","be victorious"] }
+      },
+      16: {
+        "bonus":      { details: "bona, bonum (adj)", answers: ["good"] },
+        "consilium": { details: "consilii, n. (noun)", answers: ["plan","idea","advice"] },
+        "deinde":     { details: "indecl. (adv)", answers: ["then"] },
+        "effugio":    { details: "effugere, effugi (verb)", answers: ["escape"] },
+        "imperator":  { details: "imperatoris, m. (noun)", answers: ["emperor","commander","general"] },
+        "inter":      { details: "inter + acc (prep)", answers: ["among","between"] },
+        "ita":        { details: "indecl. (adv)", answers: ["in this way","so"] },
+        "melior":     { details: "melius (adj)", answers: ["better"] },
+        "navigo":     { details: "navigare, navigavi (verb)", answers: ["sail"] },
+        "nonne?":     { details: "indecl. (adv)", answers: ["surely?"] },
+        "pereo":      { details: "perire, perii (verb, irr.)", answers: ["die","perish"] },
+        "pono":       { details: "ponere, posui, positus (verb)", answers: ["put","place","put up"] },
+        "postridie":  { details: "indecl. (adv)", answers: ["on the next day"] },
+        "simulac":    { details: "indecl. (conj)", answers: ["as soon as"] },
+        "summus":     { details: "summa, summum (adj)", answers: ["highest","greatest","top (of)"] },
+        "tollo":      { details: "tollere, sustuli, sublatus (verb)", answers: ["raise","lift up"] }
+      },
+      17: {
+        "animus":      { details: "animi, m. (noun)", answers: ["spirit","soul","mind"] },
+        "appropinquo": { details: "appropinquare, appropinquavi (verb)", answers: ["approach","come near to"] },
+        "bene":        { details: "indecl. (adv)", answers: ["well"] },
+        "benignus":    { details: "benigna, benignum (adj)", answers: ["kind","generous"] },
+        "diu":         { details: "indecl. (adv)", answers: ["for a long time"] },
+        "facilis":     { details: "facile (adj)", answers: ["easy"] },
+        "insula":      { details: "insulae, f. (noun)", answers: ["island","block of flats"] },
+        "itaque":      { details: "indecl. (adv)", answers: ["and so","therefore"] },
+        "maximus":     { details: "maxima, maximum (adj)", answers: ["the biggest","the greatest","very big","very great"] },
+        "numquam":     { details: "indecl. (adv)", answers: ["never"] },
+        "pauci":       { details: "paucae, pauca (adj)", answers: ["few","a few"] },
+        "resisto":     { details: "resistere, restiti (verb)", answers: ["resist"] }
+      },
+      18: {
+        "caput":      { details: "capitis, n. (noun)", answers: ["head"] },
+        "coepi":      { details: "coeptisse, coeptus (verb, irr.)", answers: ["began"] },
+        "cognosco":   { details: "cognoscere, cognovi, cognitus (verb)", answers: ["get to know","find out","learn"] },
+        "dea":        { details: "deae, f. (noun)", answers: ["goddess"] },
+        "discedo":    { details: "discedere, discessi (verb)", answers: ["depart","leave"] },
+        "ibi":        { details: "indecl. (adv)", answers: ["there"] },
+        "libenter":   { details: "indecl. (adv)", answers: ["willingly","gladly"] },
+        "manus":      { details: "manus, f. (noun)", answers: ["hand","group of people"] },
+        "miles":      { details: "militis, m. (noun)", answers: ["soldier"] },
+        "nam":        { details: "indecl. (conj)", answers: ["for"] },
+        "nemo":       { details: "neminis (pron)", answers: ["no one","nobody"] },
+        "pars":       { details: "partis, f. (noun)", answers: ["part"] },
+        "postea":     { details: "indecl. (adv)", answers: ["afterwards"] },
+        "pro":        { details: "pro + abl (prep)", answers: ["in front of","for","in return for"] },
+        "quo?":       { details: "indecl. (adv)", answers: ["where to?"] }
+      },
+      19: {
+        "amo":        { details: "amare, amavi, amatus (verb)", answers: ["love","like"] },
+        "carus":      { details: "cara, carum (adj)", answers: ["dear"] },
+        "cogito":     { details: "cogitare, cogitavi, cogitatus (verb)", answers: ["think","consider"] },
+        "conficio":   { details: "conficere, confeci, confectus (verb)", answers: ["finish","wear out","exhaust"] },
+        "curo":       { details: "curare, curavi, curatus (verb)", answers: ["look after","care for","supervise"] },
+        "filia":      { details: "filiae, f. (noun)", answers: ["daughter"] },
+        "forte":      { details: "indecl. (adv)", answers: ["by chance"] },
+        "iter":       { details: "itineris, n. (noun)", answers: ["journey","route","way"] },
+        "locus":      { details: "loci, m. (noun)", answers: ["place"] },
+        "periculum":  { details: "periculi, n. (noun)", answers: ["danger"] },
+        "tot":        { details: "indecl. (adj)", answers: ["so many"] },
+        "vivo":       { details: "vivere, vixi (verb)", answers: ["live","be alive"] },
+        "vix":        { details: "indecl. (adv)", answers: ["scarcely","hardly","with difficulty"] },
+        "vox":        { details: "vocis, f. (noun)", answers: ["voice","shout"] }
+      },
+      20: {
+        "crudelis":   { details: "crudele (adj)", answers: ["cruel"] },
+        "domus":      { details: "domus, f. (noun)", answers: ["home","house"] },
+        "libero":     { details: "liberare, liberavi, liberatus (verb)", answers: ["free","set free"] },
+        "mors":       { details: "mortis, f. (noun)", answers: ["death"] },
+        "novem":      { details: "indecl. (adj)", answers: ["nine"] },
+        "octo":       { details: "indecl. (adj)", answers: ["eight"] },
+        "persuadeo":  { details: "persuadere, persuasi (verb)", answers: ["persuade"] },
+        "pessimus":   { details: "pessima, pessimum (adj)", answers: ["the worst","very bad"] },
+        "quattuor":   { details: "indecl. (adj)", answers: ["four"] },
+        "quinque":    { details: "indecl. (adj)", answers: ["five"] },
+        "relinquo":   { details: "relinquere, reliqui, relictus (verb)", answers: ["leave","leave behind"] },
+        "septem":     { details: "indecl. (adj)", answers: ["seven"] },
+        "sex":        { details: "indecl. (adj)", answers: ["six"] },
+        "sicut":      { details: "indecl. (adv)", answers: ["just as","like"] },
+        "tam":        { details: "indecl. (adv)", answers: ["so"] },
+        "vulnus":     { details: "vulneris, n. (noun)", answers: ["wound"] }
+      },
+      21: {
+        "a, ab + abl":        { details: "a, ab + abl (also used as prefix with verbs) (prep)", answers: ["from","by","away"] },
+        "adiuvo":             { details: "adiuvare, adiuvi, adiutus (verb)", answers: ["help"] },
+        "annus":              { details: "anni, m. (noun)", answers: ["year"] },
+        "celo":               { details: "celare, celavi, celatus (verb)", answers: ["hide"] },
+        "circum + acc":       { details: "circum + acc (also used as prefix with verbs) (prep)", answers: ["around"] },
+        "durus":              { details: "dura, durum (adj)", answers: ["hard","harsh"] },
+        "gravis":             { details: "grave (adj)", answers: ["heavy","serious"] },
+        "hora":               { details: "horae, f. (noun)", answers: ["hour"] },
+        "infelix":            { details: "infelicis (adj)", answers: ["unlucky","unhappy"] },
+        "iubeo":              { details: "iubere, iussi, iussus (verb)", answers: ["order"] },
+        "plenus":             { details: "plena, plenum (adj)", answers: ["full"] },
+        "plus":               { details: "pluris (irregular comparative) (adj)", answers: ["more"] },
+        "sacer":              { details: "sacra, sacrum (adj)", answers: ["sacred"] },
+        "unde":               { details: "indecl. (adv)", answers: ["from where"] }
+      },
+      22: {
+        "amor":               { details: "amoris, m. (noun)", answers: ["love"] },
+        "caelum":             { details: "caeli, n. (noun)", answers: ["sky","heaven"] },
+        "hostis":             { details: "hostis, m. (noun)", answers: ["enemy"] },
+        "minimus":            { details: "minima, minimum (adj)", answers: ["very little","very small"] },
+        "nox":                { details: "noctis, f. (noun)", answers: ["night"] },
+        "quantus?":           { details: "quanta, quantum (adj)", answers: ["how big?","how much?"] },
+        "quo modo?":          { details: "indecl. (adv)", answers: ["how?","in what way?"] },
+        "tutus":              { details: "tuta, tutum (adj)", answers: ["safe"] },
+        "verbum":             { details: "verbi, n. (noun)", answers: ["word"] }
+      },
+      23: {
+        "cura":               { details: "curae, f. (noun)", answers: ["care","worry"] },
+        "enim":               { details: "indecl. (conj)", answers: ["for"] },
+        "gero":               { details: "gerere, gessi, gestus (verb)", answers: ["wear (clothes)","wage (war)"] },
+        "iacio":              { details: "iacere, ieci, iactus (verb)", answers: ["throw"] },
+        "modus":              { details: "modi, m. (noun)", answers: ["manner","way","kind"] },
+        "pareo":              { details: "parere, parui + dat (verb)", answers: ["obey"] },
+        "scio":               { details: "scire, scivi, scitus (verb)", answers: ["know"] },
+        "talis":              { details: "tale (adj)", answers: ["such"] },
+        "umquam":             { details: "indecl. (adv)", answers: ["ever"] }
+      },
+      24: {
+        "audax":              { details: "audacis (adj)", answers: ["bold","daring"] },
+        "cum":                { details: "indecl. (conj)", answers: ["when","since"] },
+        "flumen":             { details: "fluminis, n. (noun)", answers: ["river"] },
+        "interea":            { details: "indecl. (adv)", answers: ["meanwhile"] },
+        "oppugno":            { details: "oppugnare, oppugnavi, oppugnatus (verb)", answers: ["attack"] },
+        "tristis":            { details: "triste (adj)", answers: ["sad"] }
+      },
+      25: {
+        "accido":             { details: "accidere, accidi (verb)", answers: ["happen"] },
+        "aperio":             { details: "aperire, aperui, apertus (verb)", answers: ["open"] },
+        "cogo":               { details: "cogere, coegi, coactus (verb)", answers: ["force","compel"] },
+        "nescio":             { details: "nescire, nescivi (verb)", answers: ["not know"] },
+        "nomen":              { details: "nominis, n. (noun)", answers: ["name"] },
+        "poena":              { details: "poenae, f. (noun)", answers: ["punishment"] },
+        "poenas do":          { details: "dare, dedi, datus (other)", answers: ["pay the penalty","be punished"] }
+      },
+      26: {
+        "aufero":             { details: "auferre, abstuli, ablatus (verb, irr.)", answers: ["take away","carry off","steal"] },
+        "bellum":             { details: "belli, n. (noun)", answers: ["war"] },
+        "legatus":            { details: "legati, m. (noun)", answers: ["commander"] },
+        "legio":              { details: "legionis, f. (noun)", answers: ["legion"] },
+        "num":                { details: "indecl. (partic)", answers: ["whether"] },
+        "praebeo":            { details: "praebere, praebui, praebitus (verb)", answers: ["provide"] },
+        "quot?":              { details: "indecl. (adj)", answers: ["how many?"] },
+        "refero":             { details: "referre, rettuli, relatus (verb, irr.)", answers: ["bring/carry back","report","tell"] },
+        "saevus":             { details: "saeva, saevum (adj)", answers: ["savage","cruel"] },
+        "si":                 { details: "indecl. (conj)", answers: ["if"] },
+        "ut":                 { details: "indecl. + subjunc. (conj)", answers: ["that","so that","in order that"] }
+      },
+      27: {
+        "adeo":               { details: "indecl. (adv)", answers: ["so much","so greatly"] },
+        "antea":              { details: "indecl. (adv)", answers: ["before"] },
+        "appareo":            { details: "apparere, apparui (verb)", answers: ["appear"] },
+        "comes":              { details: "comitis, m.f. (noun)", answers: ["comrade","companion"] },
+        "impero":             { details: "imperare, imperavi, imperatus + dat (verb)", answers: ["order","command"] },
+        "incendo":            { details: "incendere, incendi, incensus (verb)", answers: ["burn","set on fire"] },
+        "praemium":           { details: "praemii, n. (noun)", answers: ["prize","reward","profit"] },
+        "proximus":           { details: "proxima, proximum (adj)", answers: ["nearest","next to"] },
+        "qualis?":            { details: "quale (adj)", answers: ["what sort of?"] },
+        "sub + acc/abl":      { details: "prep", answers: ["under","beneath"] },
+        "tantus":             { details: "tanta, tantum (adj)", answers: ["so great","such a great","so much"] }
+      },
+      28: {
+        "ac, atque":          { details: "indecl. (conj)", answers: ["and"] },
+        "centum":             { details: "indecl. (num)", answers: ["a hundred"] },
+        "constituo":          { details: "constituere, constitui, constitutus (verb)", answers: ["decide"] },
+        "corpus":             { details: "corporis, n. (noun)", answers: ["body"] },
+        "ira":                { details: "irae, f. (noun)", answers: ["anger"] },
+        "malus":              { details: "mala, malum (adj)", answers: ["evil","bad"] },
+        "mille":              { details: "pl. milia (num)", answers: ["thousand"] },
+        "occido":             { details: "occidere, occidi, occisus (verb)", answers: ["kill"] },
+        "sic":                { details: "indecl. (adv)", answers: ["thus","in this way"] },
+        "spes":               { details: "spei, f. (noun)", answers: ["hope"] },
+        "ut":                 { details: "indecl. + indic. (conj)", answers: ["as"] }
+      },
+      29: {
+        "dirus":              { details: "dira, dirum (adj)", answers: ["dreadful"] },
+        "liberi":             { details: "liberorum, m. pl. (noun)", answers: ["children"] },
+        "lux":                { details: "lucis, f. (noun)", answers: ["light","daylight"] },
+        "vester":             { details: "vestra, vestrum (pron)", answers: ["your (pl)","yours"] },
+        "vivus":              { details: "viva, vivum (adj)", answers: ["alive","living"] }
+      },
+      30: {
+        "dives":              { details: "divitis (adj)", answers: ["rich"] },
+        "magnopere":          { details: "indecl. (adv)", answers: ["greatly","very much"] },
+        "soror":              { details: "sororis, f. (noun)", answers: ["sister"] }
+      },
+      31: {
+        "altus":              { details: "alta, altum (adj)", answers: ["high","deep"] },
+        "ante + acc":         { details: "prep", answers: ["before","in front of"] },
+        "dux":                { details: "ducis, m. (noun)", answers: ["leader"] },
+        "ne":                 { details: "indecl. (conj)", answers: ["that … not","so that … not"] },
+        "oro":                { details: "orare, oravi, oratus (verb)", answers: ["beg","beg for"] },
+        "rapio":              { details: "rapere, rapui, raptus (verb)", answers: ["seize","grab"] },
+        "tempus":             { details: "temporis, n. (noun)", answers: ["time"] },
+        "vultus":             { details: "vultus, m. (noun)", answers: ["expression","face"] }
+      },
+      32: {
+        "labor":              { details: "laboris, m. (noun)", answers: ["work"] },
+        "nec … nec, neque … neque": { details: "indecl. (conj)", answers: ["neither … nor"] }
+      },
+      33: {
+        "brevis":             { details: "breve (adj)", answers: ["short","brief"] },
+        "contra + acc":        { details: "prep", answers: ["against"] },
+        "hic":                { details: "indecl. (adv)", answers: ["here"] },
+        "regina":             { details: "reginae, f. (noun)", answers: ["queen"] },
+        "verus":              { details: "vera, verum (adj)", answers: ["true","real"] }
+      },
+      34: {
+        "conor":              { details: "conari, conatus sum (verb)", answers: ["try"] },
+        "dum":                { details: "indecl. (conj)", answers: ["while"] },
+        "egredior":           { details: "egredi, egressus sum (verb)", answers: ["go out"] },
+        "frango":             { details: "frangere, fregi, fractus (verb)", answers: ["break"] },
+        "ingredior":          { details: "ingredi, ingressus sum (verb)", answers: ["enter"] },
+        "loquor":             { details: "loqui, locutus sum (verb)", answers: ["speak"] },
+        "morior":             { details: "mori, mortuus sum (verb)", answers: ["die"] },
+        "progredior":         { details: "progredi, progressus sum (verb)", answers: ["advance"] },
+        "regredior":          { details: "regredi, regressus sum (verb)", answers: ["go back","return"] },
+        "sequor":             { details: "sequi, secutus sum (verb)", answers: ["follow"] },
+        "sine + abl":         { details: "prep", answers: ["without"] },
+        "vestimenta":         { details: "vestimentorum, n. pl. (noun)", answers: ["clothes"] }
+      },
+        35: {
+      "ignis":              { "details": "ignis, m. (noun)", "answers": ["fire"] },
+      "aut ... aut":        { "details": "indecl. (conj)", "answers": ["either ... or ..."] },
+      "cado":               { "details": "cadere, cecidi, casus (verb)", "answers": ["fall"] },
+      "forum":              { "details": "fori, n. (noun)", "answers": ["forum", "market place"] },
+      "latus":              { "details": "lata, latum (adj)", "answers": ["wide"] },
+      "longus":             { "details": "longa, longum (adj)", "answers": ["long"] },
+      "maior":              { "details": "maius (irregular comparative, adj)", "answers": ["bigger", "larger", "greater"] },
+      "minor":              { "details": "minus (irregular comparative, adj)", "answers": ["smaller", "less"] },
+      "multo":              { "details": "indecl. (adv)", "answers": ["much"] },
+      "-ne":                { "details": "indecl. (partic)", "answers": ["(introduces question)"] },
+      "peior":              { "details": "peius (irregular comparative, adj)", "answers": ["worse"] },
+      "propter + acc":      { "details": "prep", "answers": ["because of"] },
+      "puto":               { "details": "putare, putavi, putatus (verb)", "answers": ["think"] },
+      "re-":                { "details": "prefix used with verbs", "answers": ["back"] },
+      "Roma":               { "details": "Romae, f. (noun)", "answers": ["Rome"] },
+      "Romanus":            { "details": "Romana, Romanum (adj)", "answers": ["Roman"] },
+      "trans + acc":        { "details": "prep", "answers": ["across"] },
+      "villa":              { "details": "villae, f. (noun)", "answers": ["house", "country house"] }
+      }
+  };
+      let testList = [], idx = 0, wrong = [], correct = [], graded = false;
       let selectedStages = [];
+
       document.querySelectorAll('.stage-btn').forEach(btn => {
         btn.addEventListener('click', function() {
           const value = this.getAttribute('data-value');
@@ -694,6 +1123,7 @@
           updateSelectedStagesText();
         });
       });
+
       document.getElementById('select-all').addEventListener('click', function() {
         selectedStages = [];
         document.querySelectorAll('.stage-btn').forEach(btn => {
@@ -703,6 +1133,7 @@
         Array.from(document.getElementById('stages').options).forEach(option => option.selected = true);
         updateSelectedStagesText();
       });
+
       document.getElementById('deselect-all').addEventListener('click', function() {
         selectedStages = [];
         document.querySelectorAll('.stage-btn').forEach(btn => btn.classList.remove('selected'));
@@ -711,9 +1142,20 @@
       });
 
       function updateSelectedStagesText() {
-        const textElement = document.getElementById('selected-stages-text');
-        textElement.textContent = selectedStages.length ? [...selectedStages].sort((a, b) => a - b).join(', ') : 'None';
+        let uniqueWords = new Set();
+        selectedStages.forEach(s => {
+          if (vocab[s]) {
+            for (let w in vocab[s]) {
+              uniqueWords.add(w);
+            }
+          }
+        });
+        const totalUnique = uniqueWords.size;
+        document.getElementById('total-unique').textContent = totalUnique;
       }
+
+      updateSelectedStagesText();
+
       document.getElementById("start").onclick = () => {
         if (!selectedStages.length) return alert("Please select at least one stage.");
         const count = parseInt(document.getElementById("count").value, 10);
@@ -735,18 +1177,9 @@
         correct = [];
         idx = 0;
         graded = false;
-        document.querySelector(".card").style.transform = "scale(0.95)";
-        document.querySelector(".card").style.opacity = "0.7";
+
         document.getElementById("stage-select").classList.remove('active');
-        setTimeout(() => {
-          document.getElementById("stage-select").style.display = "none";
-          document.getElementById("quiz").style.display = "block";
-          document.querySelector(".card").style.transform = "scale(1)";
-          document.querySelector(".card").style.opacity = "1";
-          setTimeout(() => {
-            document.getElementById("quiz").classList.add('active');
-          }, 50);
-        }, 300);
+        document.getElementById("quiz").classList.add('active');
         document.getElementById("progress-bar").style.width = "0%";
         showWord();
       };
@@ -773,12 +1206,10 @@
         const ok = o.answers.some(a => a.toLowerCase() === ua);
         const fb = document.getElementById("feedback");
         if (ok) {
-          fb.innerHTML = `
-						<span class="correct">✓ Correct!</span>`;
+          fb.innerHTML = `<span class="correct">✓ Correct!</span>`;
           correct.push(o);
         } else {
-          fb.innerHTML = `
-						<span class="incorrect">✗ Incorrect. ${o.answers.join(", ")}</span>`;
+          fb.innerHTML = `<span class="incorrect">✗ Incorrect. ${o.answers.join(", ")}</span>`;
           wrong.push({
             latin: `${o.word} (${o.details})`,
             you: ua || "(blank)",
@@ -794,13 +1225,16 @@
         if (idx < testList.length) showWord();
         else showSummary();
       }
+
       document.getElementById("submit").onclick = () => {
         const answer = document.getElementById("answer").value.trim();
         if (!answer) return;
         if (!graded) grade();
         else next();
       };
+
       document.getElementById("stop").onclick = showSummary;
+
       document.addEventListener("keydown", e => {
         if (e.key === "Enter") {
           e.preventDefault();
@@ -815,45 +1249,32 @@
 
       function showSummary() {
         document.getElementById("quiz").classList.remove('active');
-        setTimeout(() => {
-          document.getElementById("quiz").style.display = "none";
-          document.getElementById("summary").style.display = "block";
-          document.getElementById("summary").classList.add('active');
-        }, 500);
+        document.getElementById("summary").classList.add('active');
+
         const totalWords = testList.length;
         const correctCount = correct.length;
         const percentage = Math.round((correctCount / totalWords) * 100);
         document.getElementById("score-display").innerHTML = `
-        
-						<div style="text-align: center;">
-							<p>Correct Answers: ${correctCount}/${totalWords}</p>
-							<p class="score-percentage">${percentage}%</p>
-						</div>
-      `;
+          <div style="text-align: center;">
+            <p>Correct Answers: ${correctCount}/${totalWords}</p>
+            <p class="score-percentage">${percentage}%</p>
+          </div>
+        `;
         const tbody = document.getElementById("summary-body");
         tbody.innerHTML = wrong.length ? wrong.map(w => `
-						<tr>
-							<td>${w.latin}</td>
-							<td>${w.you}</td>
-							<td>${w.correct}</td>
-						</tr>`).join('') : `
-						<tr>
-							<td colspan="3" style="text-align:center;">All correct! 🎉</td>
-						</tr>`;
+          <tr>
+            <td>${w.latin}</td>
+            <td>${w.you}</td>
+            <td>${w.correct}</td>
+          </tr>`).join('') : `
+          <tr>
+            <td colspan="3" style="text-align:center;">All correct! 🎉</td>
+          </tr>`;
       }
+
       document.getElementById('restart').addEventListener('click', function() {
-        document.querySelector(".card").style.transform = "scale(0.95)";
-        document.querySelector(".card").style.opacity = "0.7";
         document.getElementById('summary').classList.remove('active');
-        setTimeout(() => {
-          document.getElementById('summary').style.display = 'none';
-          document.getElementById('stage-select').style.display = 'block';
-          setTimeout(() => {
-            document.querySelector(".card").style.transform = "scale(1)";
-            document.querySelector(".card").style.opacity = "1";
-            document.getElementById('stage-select').classList.add('active');
-          }, 50);
-        }, 300);
+        document.getElementById('stage-select').classList.add('active');
       });
 
       function shuffle(a) {
