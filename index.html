@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Latin Vocab Tester</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+      }
+
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
+        background-attachment: fixed;
+        color: #fff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+      }
+
+      .glass {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      }
+
+      .circle {
+        position: absolute;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+        backdrop-filter: blur(10px);
+        z-index: -1;
+        animation-duration: 20s;
+        animation-iteration-count: infinite;
+        animation-timing-function: ease-in-out;
+      }
+
+      .circle-1 {
+        width: 300px;
+        height: 300px;
+        top: -100px;
+        left: -100px;
+        background: linear-gradient(135deg, #FF61D2 0%, #FE9090 100%);
+        opacity: 0.3;
+        animation-name: float-1;
+      }
+
+      .circle-2 {
+        width: 400px;
+        height: 400px;
+        bottom: -150px;
+        right: -150px;
+        background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
+        opacity: 0.3;
+        animation-name: float-2;
+      }
+
+      .circle-3 {
+        width: 200px;
+        height: 200px;
+        top: 40%;
+        left: 10%;
+        background: linear-gradient(135deg, #F5515F 0%, #A1051D 100%);
+        opacity: 0.2;
+        animation-name: float-3;
+      }
+
+      @keyframes float-1 {
+        0% {
+          transform: translate(0, 0) rotate(0deg);
+        }
+
+        33% {
+          transform: translate(50px, 30px) rotate(5deg);
+        }
+
+        66% {
+          transform: translate(25px, 60px) rotate(-5deg);
+        }
+
+        100% {
+          transform: translate(0, 0) rotate(0deg);
+        }
+      }
+
+      @keyframes float-2 {
+        0% {
+          transform: translate(0, 0) rotate(0deg);
+        }
+
+        33% {
+          transform: translate(-40px, -30px) rotate(-8deg);
+        }
+
+        66% {
+          transform: translate(-20px, -60px) rotate(8deg);
+        }
+
+        100% {
+          transform: translate(0, 0) rotate(0deg);
+        }
+      }
+
+      @keyframes float-3 {
+        0% {
+          transform: translate(0, 0) scale(1);
+        }
+
+        50% {
+          transform: translate(40px, -30px) scale(1.1);
+        }
+
+        100% {
+          transform: translate(0, 0) scale(1);
+        }
+      }
+
+      .card {
+        width: 100%;
+        max-width: 1000px;
+        padding: 2.5rem;
+        position: relative;
+        z-index: 2;
+        color: rgba(255, 255, 255, 0.9);
+        transition: transform 300ms ease-out, opacity 300ms ease-out;
+      }
+
+      h1 {
+        font-size: 2.4rem;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        font-weight: 600;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      h2 {
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+        font-weight: 500;
+      }
+
+      #stage-select,
+      #quiz,
+      #summary {
+        margin-top: 1.8rem;
+        transition: opacity 400ms ease-in-out, visibility 400ms ease-in-out;
+      }
+
+      #stage-select,
+      #quiz,
+      #summary {
+        transition: opacity 0.5s ease, visibility 0.5s ease;
+      }
+
+      #quiz,
+      #summary {
+        opacity: 0;
+        visibility: hidden;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+      }
+
+      #quiz.active,
+      #summary.active {
+        opacity: 1;
+        visibility: visible;
+        position: relative;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 0.8rem;
+        font-size: 1rem;
+        font-weight: 500;
+        opacity: 0.9;
+      }
+
+      .stage-buttons-container {
+        margin-bottom: 1.5rem;
+        max-height: 220px;
+        overflow-y: auto;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 10px;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+      }
+
+      .stage-buttons-container::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .stage-buttons-container::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+      }
+
+      .stage-buttons-container::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 10px;
+      }
+
+      .stage-buttons {
+        display: grid;
+        grid-template-columns: repeat(9, 1fr);
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      .stage-btn {
+        width: 100%;
+        min-width: 48px;
+        padding: 10px 8px;
+        margin: 0;
+        font-size: 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        transition: all 0.2s ease;
+      }
+
+      .stage-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-1px);
+      }
+
+      .stage-btn.selected {
+        background: rgba(67, 206, 162, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 0 8px rgba(67, 206, 162, 0.5);
+      }
+
+      .control-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .control-btn {
+        padding: 10px;
+        font-size: 0.9rem;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        color: white;
+        font-weight: 500;
+      }
+
+      #select-all {
+        background: rgba(67, 206, 162, 0.3);
+      }
+
+      #select-all:hover {
+        background: rgba(67, 206, 162, 0.5);
+      }
+
+      #deselect-all {
+        background: rgba(255, 100, 100, 0.2);
+      }
+
+      #deselect-all:hover {
+        background: rgba(255, 100, 100, 0.3);
+      }
+
+      .selected-stages {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 8px 12px;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+      }
+
+      select,
+      input[type=number],
+      input[type=text] {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1.1rem;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        margin-bottom: 1.2rem;
+        color: #fff;
+        backdrop-filter: blur(5px);
+        transition: all 0.3s ease;
+      }
+
+      input[type=number]::-webkit-inner-spin-button,
+      input[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      input[type=number] {
+        -moz-appearance: textfield;
+      }
+
+      select:focus,
+      input:focus {
+        outline: none;
+        border-color: rgba(255, 255, 255, 0.5);
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+      }
+
+      ::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      option {
+        background-color: rgba(67, 206, 162, 0.9);
+        color: white;
+        padding: 0.5rem;
+      }
+
+      button {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1.1rem;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        margin-bottom: 1rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        backdrop-filter: blur(5px);
+        transition: all 0.3s ease;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+      }
+
+      button:active {
+        transform: translateY(1px);
+      }
+
+      #start {
+        background: linear-gradient(135deg, #43cea2 -50%, #185a9d 150%);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      #submit {
+        background: linear-gradient(135deg, #56ab2f -50%, #a8e063 150%);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      #stop {
+        background: linear-gradient(135deg, #FF512F -50%, #DD2476 150%);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      #restart {
+        margin-top: 2rem;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      }
+
+      #restart:hover {
+        background: rgba(255, 255, 255, 0.25);
+      }
+
+      #latin-word {
+        display: block;
+        font-size: 2.4rem;
+        font-weight: bold;
+        margin-bottom: 0.2rem;
+        text-align: center;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        color: white;
+      }
+
+      #latin-details {
+        font-size: 1.1rem;
+        opacity: 0.8;
+        margin-bottom: 1.5rem;
+        text-align: center;
+      }
+
+      #feedback {
+        font-size: 1.2rem;
+        min-height: 1.5em;
+        margin-top: 1rem;
+        text-align: center;
+        transition: all 0.3s ease;
+      }
+
+      .correct {
+        color: #a8e063;
+        text-shadow: 0 0 10px rgba(168, 224, 99, 0.5);
+      }
+
+      .incorrect {
+        color: #FF3B30;
+        font-weight: 500;
+        text-shadow: 0 0 10px rgba(247, 88, 88, 0.5);
+      }
+
+      #summary {
+        max-height: 70vh;
+        overflow-y: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1.5rem;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
+        border-radius: 12px;
+        overflow: hidden;
+        table-layout: fixed;
+      }
+
+      th,
+      td {
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 0.8rem;
+        word-wrap: break-word;
+      }
+
+      th {
+        background: rgba(255, 255, 255, 0.15);
+        font-weight: 600;
+        text-align: left;
+        position: sticky;
+        top: 0;
+      }
+
+      tr:nth-child(even) {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .progress-container {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        margin: 1.2rem 0;
+        overflow: hidden;
+      }
+
+      .progress-bar {
+        height: 0.5rem;
+        background: linear-gradient(90deg, #43cea2 0%, #185a9d 100%);
+        border-radius: 10px;
+        transition: width 0.3s ease;
+      }
+
+      .score-percentage {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #a8e063;
+        margin: 1rem 0;
+      }
+
+      @media (max-width: 768px) {
+        .card {
+          padding: 1.5rem;
+        }
+
+        h1 {
+          font-size: 2rem;
+        }
+
+        #latin-word {
+          font-size: 2rem;
+        }
+
+        .stage-buttons {
+          grid-template-columns: repeat(6, 1fr);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="circle circle-1"></div>
+    <div class="circle circle-2"></div>
+    <div class="circle circle-3"></div>
+    <div class="card glass">
+      <h1>Defined Vocabulary List for Eduqas GCSE</h1>
+      <div id="stage-select" class="active">
+        <label>Select Stage(s):</label>
+        <div class="stage-buttons-container">
+          <div class="stage-buttons">
+            <button class="stage-btn" data-value="1">1</button>
+            <button class="stage-btn" data-value="2">2</button>
+            <button class="stage-btn" data-value="3">3</button>
+            <button class="stage-btn" data-value="4">4</button>
+            <button class="stage-btn" data-value="5">5</button>
+            <button class="stage-btn" data-value="6">6</button>
+            <button class="stage-btn" data-value="7">7</button>
+            <button class="stage-btn" data-value="8">8</button>
+            <button class="stage-btn" data-value="9">9</button>
+            <button class="stage-btn" data-value="10">10</button>
+            <button class="stage-btn" data-value="11">11</button>
+            <button class="stage-btn" data-value="12">12</button>
+            <button class="stage-btn" data-value="13">13</button>
+            <button class="stage-btn" data-value="14">14</button>
+            <button class="stage-btn" data-value="15">15</button>
+            <button class="stage-btn" data-value="16">16</button>
+            <button class="stage-btn" data-value="17">17</button>
+            <button class="stage-btn" data-value="18">18</button>
+            <button class="stage-btn" data-value="19">19</button>
+            <button class="stage-btn" data-value="20">20</button>
+            <button class="stage-btn" data-value="21">21</button>
+            <button class="stage-btn" data-value="22">22</button>
+            <button class="stage-btn" data-value="23">23</button>
+            <button class="stage-btn" data-value="24">24</button>
+            <button class="stage-btn" data-value="25">25</button>
+            <button class="stage-btn" data-value="26">26</button>
+            <button class="stage-btn" data-value="27">27</button>
+            <button class="stage-btn" data-value="28">28</button>
+            <button class="stage-btn" data-value="29">29</button>
+            <button class="stage-btn" data-value="30">30</button>
+            <button class="stage-btn" data-value="31">31</button>
+            <button class="stage-btn" data-value="32">32</button>
+            <button class="stage-btn" data-value="33">33</button>
+            <button class="stage-btn" data-value="34">34</button>
+            <button class="stage-btn" data-value="35">Not in stages 1 - 34</button>
+          </div>
+          <div class="control-buttons">
+            <button id="select-all" class="control-btn">Select All</button>
+            <button id="deselect-all" class="control-btn">Deselect All</button>
+          </div>
+        </div>
+        <select id="stages" multiple class="glass" style="display: none;">
+          <option value="1">Stage 1</option>
+          <option value="2">Stage 2</option>
+          <option value="3">Stage 3</option>
+          <option value="4">Stage 4</option>
+          <option value="5">Stage 5</option>
+          <option value="6">Stage 6</option>
+          <option value="7">Stage 7</option>
+          <option value="8">Stage 8</option>
+          <option value="9">Stage 9</option>
+          <option value="10">Stage 10</option>
+          <option value="11">Stage 11</option>
+          <option value="12">Stage 12</option>
+          <option value="13">Stage 13</option>
+          <option value="14">Stage 14</option>
+          <option value="15">Stage 15</option>
+          <option value="16">Stage 16</option>
+          <option value="17">Stage 17</option>
+          <option value="18">Stage 18</option>
+          <option value="19">Stage 19</option>
+          <option value="20">Stage 20</option>
+          <option value="21">Stage 21</option>
+          <option value="22">Stage 22</option>
+          <option value="23">Stage 23</option>
+          <option value="24">Stage 24</option>
+          <option value="25">Stage 25</option>
+          <option value="26">Stage 26</option>
+          <option value="27">Stage 27</option>
+          <option value="28">Stage 28</option>
+          <option value="29">Stage 29</option>
+          <option value="30">Stage 30</option>
+          <option value="31">Stage 31</option>
+          <option value="32">Stage 32</option>
+          <option value="33">Stage 33</option>
+          <option value="34">Stage 34</option>
+          <option value="35">Not in stages 1 - 34</option>
+        </select>
+        <div class="selected-stages">
+          <p>Selected stages: <span id="selected-stages-text">None</span>
+          </p>
+        </div>
+        <label for="count">Number of words to test:</label>
+        <input type="number" id="count" min="1" placeholder="e.g. 20" class="glass">
+        <button id="start">Start Quiz</button>
+      </div>
+      <div id="quiz">
+        <div class="progress-container">
+          <div id="progress-bar" class="progress-bar" style="width: 0%"></div>
+        </div>
+        <div id="latin-word"></div>
+        <div id="latin-details"></div>
+        <input type="text" id="answer" placeholder="Enter English translation" class="glass">
+        <div class="control-panel">
+          <button id="submit">Submit Answer</button>
+          <button id="stop">End Quiz</button>
+        </div>
+        <div id="feedback"></div>
+      </div>
+      <div id="summary">
+        <h2>Quiz Results</h2>
+        <div id="score-display"></div>
+        <table>
+          <thead>
+            <tr>
+              <th>Latin</th>
+              <th>Your Answer</th>
+              <th>Correct Answer(s)</th>
+            </tr>
+          </thead>
+          <tbody id="summary-body"></tbody>
+        </table>
+        <button id="restart">Return to Start Screen</button>
+      </div>
+    </div>
+    <script>
+      const vocab = {
+        1: {
+          "canis": {
+            details: "canis, m. (noun)",
+            answers: ["dog"]
+          },
+          "filius": {
+            details: "filii, m. (noun)",
+            answers: ["son"]
+          },
+          "hortus": {
+            details: "horti, m. (noun)",
+            answers: ["garden"]
+          },
+          "in+acc": {
+            details: "in + acc (prep)",
+            answers: ["into", "onto"]
+          },
+          "in+abl": {
+            details: "in + abl (prep)",
+            answers: ["in", "on"]
+          },
+          "laboro": {
+            details: "laborare, laboravi (verb)",
+            answers: ["work"]
+          },
+          "mater": {
+            details: "matris, f. (noun)",
+            answers: ["mother"]
+          },
+          "pater": {
+            details: "patris, m. (noun)",
+            answers: ["father"]
+          },
+          "sedeo": {
+            details: "sedere, sedi (verb)",
+            answers: ["sit"]
+          },
+          "servus": {
+            details: "servi, m. (noun)",
+            answers: ["slave"]
+          },
+          "sum": {
+            details: "esse, fui (verb, irr.)",
+            answers: ["be"]
+          },
+          "via": {
+            details: "viae, f. (noun)",
+            answers: ["street", "road", "way"]
+          }
+        },
+      };
+      let testList = [],
+        idx = 0,
+        wrong = [],
+        correct = [],
+        graded = false;
+      let selectedStages = [];
+      document.querySelectorAll('.stage-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const value = this.getAttribute('data-value');
+          this.classList.toggle('selected');
+          const selectElement = document.getElementById('stages');
+          const option = selectElement.querySelector(`option[value="${value}"]`);
+          if (this.classList.contains('selected')) {
+            if (!selectedStages.includes(value)) selectedStages.push(value);
+            option.selected = true;
+          } else {
+            const index = selectedStages.indexOf(value);
+            if (index > -1) selectedStages.splice(index, 1);
+            option.selected = false;
+          }
+          updateSelectedStagesText();
+        });
+      });
+      document.getElementById('select-all').addEventListener('click', function() {
+        selectedStages = [];
+        document.querySelectorAll('.stage-btn').forEach(btn => {
+          btn.classList.add('selected');
+          selectedStages.push(btn.getAttribute('data-value'));
+        });
+        Array.from(document.getElementById('stages').options).forEach(option => option.selected = true);
+        updateSelectedStagesText();
+      });
+      document.getElementById('deselect-all').addEventListener('click', function() {
+        selectedStages = [];
+        document.querySelectorAll('.stage-btn').forEach(btn => btn.classList.remove('selected'));
+        Array.from(document.getElementById('stages').options).forEach(option => option.selected = false);
+        updateSelectedStagesText();
+      });
+
+      function updateSelectedStagesText() {
+        const textElement = document.getElementById('selected-stages-text');
+        textElement.textContent = selectedStages.length ? [...selectedStages].sort((a, b) => a - b).join(', ') : 'None';
+      }
+      document.getElementById("start").onclick = () => {
+        if (!selectedStages.length) return alert("Please select at least one stage.");
+        const count = parseInt(document.getElementById("count").value, 10);
+        if (!count || isNaN(count)) return alert("Please enter a valid number of words to test.");
+        let pool = [];
+        selectedStages.forEach(s => {
+          if (vocab[s]) {
+            for (let w in vocab[s]) pool.push({
+              word: w,
+              details: vocab[s][w].details,
+              answers: vocab[s][w].answers
+            });
+          }
+        });
+        if (!pool.length) return alert("No words found for selected stages.");
+        testList = count >= pool.length ? shuffle([...pool]) : shuffle(pool).slice(0, count);
+        while (testList.length < count) testList.push(pool[Math.floor(Math.random() * pool.length)]);
+        wrong = [];
+        correct = [];
+        idx = 0;
+        graded = false;
+        document.querySelector(".card").style.transform = "scale(0.95)";
+        document.querySelector(".card").style.opacity = "0.7";
+        document.getElementById("stage-select").classList.remove('active');
+        setTimeout(() => {
+          document.getElementById("stage-select").style.display = "none";
+          document.getElementById("quiz").style.display = "block";
+          document.querySelector(".card").style.transform = "scale(1)";
+          document.querySelector(".card").style.opacity = "1";
+          setTimeout(() => {
+            document.getElementById("quiz").classList.add('active');
+          }, 50);
+        }, 300);
+        document.getElementById("progress-bar").style.width = "0%";
+        showWord();
+      };
+
+      function updateProgress() {
+        document.getElementById("progress-bar").style.width = `${(idx / testList.length) * 100}%`;
+      }
+
+      function showWord() {
+        const o = testList[idx];
+        document.getElementById("latin-word").textContent = o.word;
+        document.getElementById("latin-details").textContent = o.details;
+        document.getElementById("answer").value = "";
+        document.getElementById("feedback").textContent = "";
+        graded = false;
+        document.getElementById("answer").focus();
+        updateProgress();
+      }
+
+      function grade() {
+        if (graded) return;
+        const ua = document.getElementById("answer").value.trim().toLowerCase();
+        const o = testList[idx];
+        const ok = o.answers.some(a => a.toLowerCase() === ua);
+        const fb = document.getElementById("feedback");
+        if (ok) {
+          fb.innerHTML = `
+						<span class="correct">✓ Correct!</span>`;
+          correct.push(o);
+        } else {
+          fb.innerHTML = `
+						<span class="incorrect">✗ Incorrect. ${o.answers.join(", ")}</span>`;
+          wrong.push({
+            latin: `${o.word} (${o.details})`,
+            you: ua || "(blank)",
+            correct: o.answers.join(", ")
+          });
+        }
+        graded = true;
+      }
+
+      function next() {
+        if (!graded) return;
+        idx++;
+        if (idx < testList.length) showWord();
+        else showSummary();
+      }
+      document.getElementById("submit").onclick = () => {
+        const answer = document.getElementById("answer").value.trim();
+        if (!answer) return;
+        if (!graded) grade();
+        else next();
+      };
+      document.getElementById("stop").onclick = showSummary;
+      document.addEventListener("keydown", e => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          const answer = document.getElementById("answer").value.trim();
+          if (!answer) return;
+          if (document.getElementById("quiz").classList.contains('active')) {
+            if (!graded) grade();
+            else next();
+          }
+        }
+      });
+
+      function showSummary() {
+        document.getElementById("quiz").classList.remove('active');
+        setTimeout(() => {
+          document.getElementById("quiz").style.display = "none";
+          document.getElementById("summary").style.display = "block";
+          document.getElementById("summary").classList.add('active');
+        }, 500);
+        const totalWords = testList.length;
+        const correctCount = correct.length;
+        const percentage = Math.round((correctCount / totalWords) * 100);
+        document.getElementById("score-display").innerHTML = `
+        
+						<div style="text-align: center;">
+							<p>Correct Answers: ${correctCount}/${totalWords}</p>
+							<p class="score-percentage">${percentage}%</p>
+						</div>
+      `;
+        const tbody = document.getElementById("summary-body");
+        tbody.innerHTML = wrong.length ? wrong.map(w => `
+						<tr>
+							<td>${w.latin}</td>
+							<td>${w.you}</td>
+							<td>${w.correct}</td>
+						</tr>`).join('') : `
+						<tr>
+							<td colspan="3" style="text-align:center;">All correct! 🎉</td>
+						</tr>`;
+      }
+      document.getElementById('restart').addEventListener('click', function() {
+        document.querySelector(".card").style.transform = "scale(0.95)";
+        document.querySelector(".card").style.opacity = "0.7";
+        document.getElementById('summary').classList.remove('active');
+        setTimeout(() => {
+          document.getElementById('summary').style.display = 'none';
+          document.getElementById('stage-select').style.display = 'block';
+          setTimeout(() => {
+            document.querySelector(".card").style.transform = "scale(1)";
+            document.querySelector(".card").style.opacity = "1";
+            document.getElementById('stage-select').classList.add('active');
+          }, 50);
+        }, 300);
+      });
+
+      function shuffle(a) {
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+    </script>
+  </body>
+</html>
